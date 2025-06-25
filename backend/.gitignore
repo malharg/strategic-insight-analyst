@@ -1,0 +1,10 @@
+# backend/.gitignore
+
+# The local database file
+*.db
+
+# The Firebase service account key
+serviceAccountKey.json
+
+# Compiled binary
+strategic-insight-analyst
