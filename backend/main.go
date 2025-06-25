@@ -1,28 +1,49 @@
-// backend/main.go
+// backend/main.go (Modified)
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 
-	// Import the new database package
+	"github.com/malharg/strategic-insight-analyst/backend/auth"
 	"github.com/malharg/strategic-insight-analyst/backend/database"
 )
 
 func main() {
-	// Initialize the database
-	database.InitDB("./sia.db") // This will create a sia.db file in the backend folder
+	database.InitDB("./sia.db")
+	auth.InitFirebaseAuth() // Initialize Firebase Admin
 
-	// Define a simple handler function
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello from the Go Backend! Database is connected.")
+	// Public endpoint
+	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	// Start the server on port 8080
+	// Create a new ServeMux for protected routes
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/secure-ping", securePingHandler)
+
+	// Wrap the mux with the AuthMiddleware
+	protectedRoutes := auth.AuthMiddleware(mux)
+
+	// Register the protected routes handler
+	http.Handle("/api/secure-ping", protectedRoutes)
+
 	port := ":8080"
 	log.Printf("Backend server starting on port %s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// This is our new protected handler
+func securePingHandler(w http.ResponseWriter, r *http.Request) {
+	// Retrieve the user ID from the context
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Pong! You are authenticated.",
+		"userID":  userID,
+	})
 }
