@@ -60,11 +60,11 @@ func main() {
 
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Your frontend URL
+		AllowedOrigins:   []string{"http://localhost:3000", "https://strategic-insight-analyst-ndwn.vercel.app/"}, // Your frontend URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
-		Debug:            true, // during development
+		Debug:            false,
 	})
 
 	// Wrap the main router with the CORS middleware
