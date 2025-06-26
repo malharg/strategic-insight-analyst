@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/malharg/strategic-insight-analyst/backend/auth"
@@ -69,12 +70,15 @@ func main() {
 	// Wrap the main router with the CORS middleware
 	handler := c.Handler(mux)
 
-	port := ":8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default for local
+	}
 	log.Printf("Backend server starting on port %s\n", port)
 
 	// Use the CORS-wrapped handler
 	server := &http.Server{
-		Addr:         port,
+		Addr:         ":" + port,
 		Handler:      handler,
 		ReadTimeout:  15 * time.Second, // Increased timeout slightly for uploads
 		WriteTimeout: 15 * time.Second,
