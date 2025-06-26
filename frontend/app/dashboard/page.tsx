@@ -1,7 +1,7 @@
 // frontend/app/dashboard/page.tsx
 "use client";
 
-import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ export default function DashboardPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
 
   // Function to fetch documents from the backend
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     if (!user) return;
     try {
       const docs = await authenticatedFetch("/api/documents");
@@ -51,10 +51,14 @@ export default function DashboardPage() {
       } else {
         setDocuments([]);
       }
-    } catch (err: any) {
-      setError("Failed to fetch documents: " + err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError("Failed to fetch documents: " + err.message);
+      } else {
+        setError("An unknown error occurred while fetching documents.");
+      }
     }
-  };
+  }, [user]);
 
   // useEffect hook to handle auth state and initial data loading
   useEffect(() => {
@@ -64,7 +68,8 @@ export default function DashboardPage() {
     if (user) {
       fetchDocuments();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, fetchDocuments]); // <-- `fetchDocuments` is now a dependency
+
 
   // =========================================================================
   // Handler for deleting a document
@@ -116,8 +121,12 @@ export default function DashboardPage() {
       setFile(null);
       await fetchDocuments();
       setMessage('');
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during upload.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred during upload.");
+      }
     } finally {
       setIsUploading(false);
     }
