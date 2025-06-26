@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // <-- ADDED: Import for the confirmation dialog
+} from "@/components/ui/alert-dialog";
 import { authenticatedFetch } from "@/lib/api";
 import { auth } from "@/lib/firebase";
 import Link from "next/link";
@@ -33,15 +33,13 @@ type Document = {
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  
-  // State for the component
+
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
 
-  // Function to fetch documents from the backend
   const fetchDocuments = useCallback(async () => {
     if (!user) return;
     try {
@@ -51,7 +49,7 @@ export default function DashboardPage() {
       } else {
         setDocuments([]);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       if (err instanceof Error) {
         setError("Failed to fetch documents: " + err.message);
       } else {
@@ -60,7 +58,6 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  // useEffect hook to handle auth state and initial data loading
   useEffect(() => {
     if (!loading && !user) {
       router.push("/");
@@ -68,30 +65,25 @@ export default function DashboardPage() {
     if (user) {
       fetchDocuments();
     }
-  }, [user, loading, router, fetchDocuments]); // <-- `fetchDocuments` is now a dependency
+  }, [user, loading, router, fetchDocuments]);
 
-
-  // =========================================================================
-  // Handler for deleting a document
-  // =========================================================================
   const handleDelete = async (docId: string) => {
-    //  update the UI for a faster feel
     setDocuments(currentDocs => currentDocs.filter(doc => doc.id !== docId));
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
       await authenticatedFetch(`/api/documents/delete?id=${docId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      // The list is already updated, but a refetch ensures consistency if needed.
-      // For now, the optimistic update is enough.
-    } catch (err: any) {
-      setError(`Failed to delete document. Please refresh. Error: ${err.message}`);
-      // If the delete fails, refetch to restore the original list
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Failed to delete document. Please refresh. Error: ${err.message}`);
+      } else {
+        setError("An unknown error occurred while deleting the document.");
+      }
       fetchDocuments();
     }
   };
-  // =========================================================================
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -117,11 +109,11 @@ export default function DashboardPage() {
         method: "POST",
         body: formData,
       });
-      setMessage('Upload successful!');
+      setMessage("Upload successful!");
       setFile(null);
       await fetchDocuments();
-      setMessage('');
-    } catch (err) {
+      setMessage("");
+    } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -135,7 +127,7 @@ export default function DashboardPage() {
   if (loading) {
     return <div className="flex h-screen items-center justify-center">Loading session...</div>;
   }
-  
+
   if (!user) {
     return null;
   }
@@ -170,7 +162,7 @@ export default function DashboardPage() {
             </form>
           </CardContent>
         </Card>
-        
+
         <Card className="w-full max-w-2xl mx-auto mt-8">
           <CardHeader><CardTitle>My Documents</CardTitle></CardHeader>
           <CardContent>
@@ -178,8 +170,8 @@ export default function DashboardPage() {
               <ul className="space-y-2">
                 {documents.map((doc) => (
                   <li key={doc.id} className="flex justify-between items-center p-3 border rounded hover:bg-gray-50">
-                    <div className="flex flex-col flex-1 min-w-0 mr-4"> {/* <-- MODIFIED THIS DIV */}
-                    <span className="font-medium truncate"> {doc.fileName}</span>
+                    <div className="flex flex-col flex-1 min-w-0 mr-4">
+                      <span className="font-medium truncate">{doc.fileName}</span>
                       <span className="text-xs text-gray-500">
                         Uploaded on: {new Date(doc.uploadedAt).toLocaleDateString()}
                       </span>
@@ -213,7 +205,9 @@ export default function DashboardPage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">You haven't uploaded any documents yet.</p>
+              <p className="text-sm text-gray-500">
+                You haven&rsquo;t uploaded any documents yet.
+              </p>
             )}
           </CardContent>
         </Card>
