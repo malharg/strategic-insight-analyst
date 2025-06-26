@@ -2,7 +2,7 @@
 import { auth } from "./firebase";
 
 // IMPORTANT: Make sure this points to your Go backend's URL
-const API_BASE_URL = "http://localhost:8080"; 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"; 
 
 export const authenticatedFetch = async (endpoint: string, options: RequestInit = {}) => {
   const user = auth.currentUser;
