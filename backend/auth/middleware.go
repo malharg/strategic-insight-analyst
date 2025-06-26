@@ -1,4 +1,3 @@
-// backend/auth/middleware.go
 package auth
 
 import (

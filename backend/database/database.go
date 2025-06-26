@@ -26,8 +26,8 @@ func InitDB(filepath string) {
 }
 
 func createTables() {
-	// Using TEXT for ENUM and JSONB as SQLite is flexible.
-	// DATETIME is a standard way to store timestamps.
+	// This schema is adjusted for SQLite compatibility but respects the original structure.
+	// VARCHAR(255) becomes TEXT, TIMESTAMP becomes DATETIME, ENUM becomes TEXT with a CHECK constraint.
 	schema := `
     CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -49,7 +49,7 @@ func createTables() {
         document_id TEXT NOT NULL,
         chunk_index INTEGER NOT NULL,
         content TEXT NOT NULL,
-        embedding TEXT, -- Storing JSON as TEXT in SQLite
+        embedding TEXT, -- JSONB becomes TEXT in SQLite
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
         UNIQUE (document_id, chunk_index)

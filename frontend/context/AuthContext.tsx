@@ -1,4 +1,3 @@
-// frontend/context/AuthContext.tsx
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";

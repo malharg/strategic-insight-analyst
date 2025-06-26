@@ -8,3 +8,6 @@ serviceAccountKey.json
 
 # Compiled binary
 strategic-insight-analyst
+
+.env
+.env.local
